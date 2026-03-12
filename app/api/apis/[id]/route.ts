@@ -5,10 +5,11 @@ import { updateApiSchema } from "@/lib/validations";
 import { cookies } from "next/headers";
 
 interface RouteContext {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function GET(request: NextRequest, { params }: RouteContext) {
+  const { id } = await params;
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get("auth_token")?.value;
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
       );
     }
 
-    const apiId = parseInt(params.id);
+    const apiId = parseInt(id);
     if (isNaN(apiId)) {
       return NextResponse.json(
         { error: "Invalid API ID" },
@@ -75,6 +76,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
 
 export async function PUT(request: NextRequest, { params }: RouteContext) {
   try {
+    const { id } = await params;
     const cookieStore = await cookies();
     const token = cookieStore.get("auth_token")?.value;
 
@@ -93,7 +95,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
       );
     }
 
-    const apiId = parseInt(params.id);
+    const apiId = parseInt(id);
     if (isNaN(apiId)) {
       return NextResponse.json(
         { error: "Invalid API ID" },
@@ -124,7 +126,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
     const validatedData = updateApiSchema.parse(body);
 
     const api = await prisma.aPI.update({
-      where: { id: apiId },
+      where: { id: parseInt(id) },
       data: validatedData,
       include: {
         user: {
@@ -155,6 +157,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
 
 export async function DELETE(request: NextRequest, { params }: RouteContext) {
   try {
+    const { id } = await params;
     const cookieStore = await cookies();
     const token = cookieStore.get("auth_token")?.value;
 
@@ -173,7 +176,7 @@ export async function DELETE(request: NextRequest, { params }: RouteContext) {
       );
     }
 
-    const apiId = parseInt(params.id);
+    const apiId = parseInt(id);
     if (isNaN(apiId)) {
       return NextResponse.json(
         { error: "Invalid API ID" },
@@ -201,7 +204,7 @@ export async function DELETE(request: NextRequest, { params }: RouteContext) {
     }
 
     await prisma.aPI.delete({
-      where: { id: apiId },
+      where: { id: parseInt(id) },
     });
 
     return NextResponse.json({ message: "API deleted successfully" });

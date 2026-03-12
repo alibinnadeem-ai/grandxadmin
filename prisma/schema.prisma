@@ -24,7 +24,7 @@ model User {
 model API {
   id          Int      @id @default(autoincrement())
   name        String
-  description String
+  description String?
   endpoint    String
   headers     Json
   authMethod  String

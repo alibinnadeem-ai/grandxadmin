@@ -4,11 +4,12 @@ import { getUserFromToken } from "@/lib/auth";
 import { cookies } from "next/headers";
 
 interface RouteContext {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export async function PUT(request: NextRequest, { params }: RouteContext) {
   try {
+    const { id } = await params;
     const cookieStore = await cookies();
     const token = cookieStore.get("auth_token")?.value;
 
@@ -34,7 +35,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
       );
     }
 
-    const userId = parseInt(params.id);
+    const userId = parseInt(id);
     if (isNaN(userId)) {
       return NextResponse.json(
         { error: "Invalid user ID" },

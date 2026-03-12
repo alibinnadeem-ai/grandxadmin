@@ -268,7 +268,7 @@ export default function ApisPage() {
                   No APIs configured yet
                 </p>
                 <p className="text-gray-500 dark:text-gray-400 mt-2">
-                  Click "Add New API" to get started
+                  Click &quot;Add New API&quot; to get started
                 </p>
               </div>
             ) : (
