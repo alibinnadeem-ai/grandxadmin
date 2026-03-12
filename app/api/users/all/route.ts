@@ -30,8 +30,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const pendingUsers = await prisma.user.findMany({
-      where: { status: "PENDING" },
+    const allUsers = await prisma.user.findMany({
       select: {
         id: true,
         username: true,
@@ -39,13 +38,18 @@ export async function GET(request: NextRequest) {
         status: true,
         isApproved: true,
         createdAt: true,
+        _count: {
+          select: {
+            apis: true,
+          },
+        },
       },
-      orderBy: { createdAt: "asc" },
+      orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ users: pendingUsers });
+    return NextResponse.json({ users: allUsers });
   } catch (error) {
-    console.error("Get pending users error:", error);
+    console.error("Get all users error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

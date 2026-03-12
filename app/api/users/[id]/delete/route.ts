@@ -7,7 +7,7 @@ interface RouteContext {
   params: Promise<{ id: string }>;
 }
 
-export async function PUT(request: NextRequest, { params }: RouteContext) {
+export async function DELETE(request: NextRequest, { params }: RouteContext) {
   try {
     const { id } = await params;
     const cookieStore = await cookies();
@@ -43,27 +43,35 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
       );
     }
 
-    const body = await request.json();
-    const { isApproved } = body;
-
-    const updatedUser = await prisma.user.update({
+    // Prevent deleting the admin themselves
+    const currentUser = await prisma.user.findUnique({
       where: { id: userId },
-      data: {
-        isApproved,
-        status: isApproved ? "APPROVED" : "REJECTED",
-      },
-      select: {
-        id: true,
-        username: true,
-        role: true,
-        isApproved: true,
-        status: true,
-      },
     });
 
-    return NextResponse.json({ user: updatedUser });
+    if (!currentUser) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    // Check if trying to delete the current admin
+    const tokenData = await getUserFromToken(token);
+    if (tokenData && tokenData.id === userId) {
+      return NextResponse.json(
+        { error: "Cannot delete your own account" },
+        { status: 400 }
+      );
+    }
+
+    // Delete the user (cascade delete will handle their APIs)
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+
+    return NextResponse.json({ success: true, message: "User deleted successfully" });
   } catch (error) {
-    console.error("Approve user error:", error);
+    console.error("Delete user error:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
