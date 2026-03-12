@@ -10,10 +10,11 @@ export interface JWTPayload {
   userId: number;
   username: string;
   role: string;
+  [key: string]: any;
 }
 
 export async function signToken(payload: JWTPayload): Promise<string> {
-  const token = await new SignJWT({ payload })
+  const token = await new SignJWT(payload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
